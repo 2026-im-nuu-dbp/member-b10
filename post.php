@@ -1,32 +1,32 @@
 <?php
-// Insert new discussion into database
 
 header('Content-Type: text/html; charset=utf-8');
-require 'db_config.php';
+require_once 'member_helper.php';
+
+require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die('Invalid request method.');
 }
 
-$author = isset($_POST['author']) ? trim($_POST['author']) : '';
-$title = isset($_POST['title']) ? trim($_POST['title']) : '';
-$content = isset($_POST['content']) ? trim($_POST['content']) : '';
+$title = trim($_POST['title'] ?? '');
+$content = trim($_POST['content'] ?? '');
+$member = current_member();
 
-// Validation
-if (empty($author) || empty($title) || empty($content)) {
-    die('所有欄位都必須填寫。<br><a href="index.php">返回</a>');
+if ($title === '' || $content === '') {
+    die('標題與內容都必須填寫。<br><a href="index.php">返回</a>');
 }
 
-// Limit input length
-$author = substr($author, 0, 100);
-$title = substr($title, 0, 200);
-$content = substr($content, 0, 10000);
-
 try {
-    $stmt = $pdo->prepare('INSERT INTO news (title, content, author) VALUES (?, ?, ?)');
-    $stmt->execute([$title, $content, $author]);
+    $stmt = $pdo->prepare('INSERT INTO news1 (title, content, author, avatar, favorite_color) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([
+        substr($title, 0, 200),
+        substr($content, 0, 10000),
+        $member['nickname'],
+        $member['avatar'],
+        $member['favorite_color'],
+    ]);
 
-    // Redirect to homepage
     header('Location: index.php');
     exit;
 } catch (PDOException $e) {

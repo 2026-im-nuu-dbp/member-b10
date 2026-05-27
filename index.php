@@ -1,17 +1,15 @@
 <?php
-// Read and display discussion topics
 
 header('Content-Type: text/html; charset=utf-8');
-require 'db_config.php';
+require_once 'member_helper.php';
 
-// Fetch all news topics with reply count
 try {
     $stmt = $pdo->query('
-        SELECT n.id, n.title, n.author, n.created_at,
-               COUNT(r.id) as reply_count
-        FROM news n
-        LEFT JOIN replies r ON n.id = r.news_id
-        GROUP BY n.id, n.title, n.author, n.created_at
+        SELECT n.id, n.title, n.content, n.author, n.avatar, n.favorite_color, n.created_at,
+               COUNT(r.id) AS reply_count
+        FROM news1 n
+        LEFT JOIN replies1 r ON n.id = r.news_id
+        GROUP BY n.id, n.title, n.content, n.author, n.avatar, n.favorite_color, n.created_at
         ORDER BY n.created_at DESC
     ');
     $news = $stmt->fetchAll();
@@ -35,6 +33,19 @@ try {
         .container {
             max-width: 900px;
             margin: 0 auto;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin-left: 10px;
         }
         h1 {
             color: #333;
@@ -90,6 +101,7 @@ try {
         .news-item {
             padding: 15px 20px;
             border-bottom: 1px solid #eee;
+            border-left: 4px solid transparent;
         }
         .news-item:last-child {
             border-bottom: none;
@@ -112,6 +124,20 @@ try {
         .news-meta {
             font-size: 14px;
             color: #666;
+            margin-top: 10px;
+        }
+        .member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border: 1px solid;
+            border-radius: 999px;
+            margin-right: 6px;
+            font-size: 14px;
+        }
+        .member-avatar {
+            font-size: 18px;
         }
         .reply-count {
             display: inline-block;
@@ -139,7 +165,21 @@ try {
 </head>
 <body>
     <div class="container">
-        <h1>📋 討論區</h1>
+        <div class="topbar">
+            <h1>📋 討論區</h1>
+            <div class="nav">
+                <?php if (is_logged_in()): ?>
+                    <span>你好，<?= escape(current_member()['nickname']) ?></span>
+                    <a href="logout.php">登出</a>
+                    <?php if (is_admin()): ?>
+                        <a href="admin_members.php">會員管理</a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <a href="login.php">登入</a>
+                    <a href="register.php">註冊</a>
+                <?php endif; ?>
+            </div>
+        </div>
 
         <?php if (isset($error)): ?>
             <div class="error"><?= escape($error) ?></div>
@@ -147,24 +187,28 @@ try {
 
         <div class="form-box">
             <h2>發表新討論</h2>
-            <form action="post.php" method="post">
-                <div class="form-group">
-                    <label for="author">作者：</label>
-                    <input type="text" id="author" name="author" maxlength="100" required>
-                </div>
+            <?php if (is_logged_in()): ?>
+                <form action="post.php" method="post">
+                    <div class="form-group">
+                        <label>發文者：</label>
+                        <?= member_badge(current_member()['nickname'], current_member()['avatar'], current_member()['favorite_color']) ?>
+                    </div>
 
-                <div class="form-group">
-                    <label for="title">標題：</label>
-                    <input type="text" id="title" name="title" maxlength="200" required>
-                </div>
+                    <div class="form-group">
+                        <label for="title">標題：</label>
+                        <input type="text" id="title" name="title" maxlength="200" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="content">內容：</label>
-                    <textarea id="content" name="content" required></textarea>
-                </div>
+                    <div class="form-group">
+                        <label for="content">內容：</label>
+                        <textarea id="content" name="content" required></textarea>
+                    </div>
 
-                <button type="submit">發表討論</button>
-            </form>
+                    <button type="submit">發表討論</button>
+                </form>
+            <?php else: ?>
+                <p>請先 <a href="login.php">登入</a> 或 <a href="register.php">註冊</a> 後再發文。</p>
+            <?php endif; ?>
         </div>
 
         <h2>討論列表</h2>
@@ -176,7 +220,7 @@ try {
         <?php else: ?>
             <div class="news-list">
                 <?php foreach ($news as $item): ?>
-                    <div class="news-item">
+                    <div class="news-item" style="background: <?= escape(member_color($item['favorite_color'])) ?>15; border-left-color: <?= escape(member_color($item['favorite_color'])) ?>;">
                         <div class="news-title">
                             <a href="show_news.php?id=<?= $item['id'] ?>">
                                 <?= escape($item['title']) ?>
@@ -188,7 +232,7 @@ try {
                             <?php endif; ?>
                         </div>
                         <div class="news-meta">
-                            由 <strong><?= escape($item['author']) ?></strong> 發表於
+                            由 <?= member_badge($item['author'], $item['avatar'], $item['favorite_color']) ?> 發表於
                             <?= escape($item['created_at']) ?>
                         </div>
                     </div>

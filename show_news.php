@@ -1,41 +1,33 @@
 <?php
-// Display discussion content and replies
 
 header('Content-Type: text/html; charset=utf-8');
-require 'db_config.php';
+require_once 'member_helper.php';
 
-$newsId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$newsId = intval($_GET['id'] ?? 0);
 
 if ($newsId <= 0) {
     die('無效的討論 ID。<br><a href="index.php">返回首頁</a>');
 }
 
-// Fetch news content
 try {
-    $stmt = $pdo->prepare('SELECT id, title, content, author, created_at FROM news WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT id, title, content, author, avatar, favorite_color, created_at FROM news1 WHERE id = ?');
     $stmt->execute([$newsId]);
     $news = $stmt->fetch();
 
     if (!$news) {
         die('找不到此討論。<br><a href="index.php">返回首頁</a>');
     }
-} catch (PDOException $e) {
-    die('讀取討論失敗: ' . $e->getMessage());
-}
 
-// Fetch replies
-try {
     $stmt = $pdo->prepare('
-        SELECT id, content, author, created_at 
-        FROM replies 
-        WHERE news_id = ? 
+        SELECT id, content, author, avatar, favorite_color, created_at
+        FROM replies1
+        WHERE news_id = ?
         ORDER BY created_at ASC
     ');
     $stmt->execute([$newsId]);
     $replies = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = '讀取回應失敗: ' . $e->getMessage();
-    $replies = [];
+    die('讀取討論失敗: ' . $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -53,6 +45,18 @@ try {
         .container {
             max-width: 900px;
             margin: 0 auto;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .topbar a {
+            color: #007bff;
+            text-decoration: none;
         }
         .back-link {
             display: inline-block;
@@ -104,7 +108,6 @@ try {
         }
         .reply-author {
             font-weight: bold;
-            color: #007bff;
             margin-bottom: 5px;
         }
         .reply-time {
@@ -169,16 +172,38 @@ try {
             padding-bottom: 8px;
             margin-bottom: 20px;
         }
+        .member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            border: 1px solid;
+            border-radius: 999px;
+        }
+        .member-avatar {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="index.php" class="back-link">← 返回討論列表</a>
+        <div class="topbar">
+            <a href="index.php" class="back-link">← 返回討論列表</a>
+            <div>
+                <?php if (is_logged_in()): ?>
+                    <span>你好，<?= escape(current_member()['nickname']) ?></span>
+                    <a href="logout.php">登出</a>
+                <?php else: ?>
+                    <a href="login.php">登入</a>
+                    <a href="register.php">註冊</a>
+                <?php endif; ?>
+            </div>
+        </div>
 
         <div class="news-content">
             <div class="news-title"><?= escape($news['title']) ?></div>
             <div class="news-meta">
-                由 <strong><?= escape($news['author']) ?></strong> 發表於
+                由 <?= member_badge($news['author'], $news['avatar'], $news['favorite_color']) ?> 發表於
                 <?= escape($news['created_at']) ?>
             </div>
             <div class="news-body"><?= escape($news['content']) ?></div>
@@ -191,16 +216,15 @@ try {
                 <p class="empty">目前沒有回應。</p>
             <?php else: ?>
                 <?php foreach ($replies as $reply): ?>
-                    <div class="reply-item">
-                        <div class="reply-author">
-                            <?= escape($reply['author']) ?>
+                    <div class="reply-item" style="background: <?= escape(member_color($reply['favorite_color'])) ?>15; border-left-color: <?= escape(member_color($reply['favorite_color'])) ?>;">
+                        <div class="reply-author member-badge" style="background: <?= escape(member_color($reply['favorite_color'])) ?>20; border-color: <?= escape(member_color($reply['favorite_color'])) ?>;">
+                            <span><?= escape($reply['author']) ?></span>
+                            <span class="member-avatar"><?= escape(member_avatar($reply['avatar'])) ?></span>
                             <span class="reply-time">
                                 - <?= escape($reply['created_at']) ?>
                             </span>
                         </div>
-                        <div class="reply-content">
-                            <?= escape($reply['content']) ?>
-                        </div>
+                        <div class="reply-content"><?= escape($reply['content']) ?></div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -208,21 +232,25 @@ try {
 
         <div class="form-box">
             <h2>發表回應</h2>
-            <form action="post_reply.php" method="post">
-                <input type="hidden" name="news_id" value="<?= $newsId ?>">
+            <?php if (is_logged_in()): ?>
+                <form action="post_reply.php" method="post">
+                    <input type="hidden" name="news_id" value="<?= $newsId ?>">
 
-                <div class="form-group">
-                    <label for="author">作者：</label>
-                    <input type="text" id="author" name="author" maxlength="100" required>
-                </div>
+                    <div class="form-group">
+                        <label>回應者：</label>
+                        <?= member_badge(current_member()['nickname'], current_member()['avatar'], current_member()['favorite_color']) ?>
+                    </div>
 
-                <div class="form-group">
-                    <label for="content">回應內容：</label>
-                    <textarea id="content" name="content" required></textarea>
-                </div>
+                    <div class="form-group">
+                        <label for="content">回應內容：</label>
+                        <textarea id="content" name="content" required></textarea>
+                    </div>
 
-                <button type="submit">送出回應</button>
-            </form>
+                    <button type="submit">送出回應</button>
+                </form>
+            <?php else: ?>
+                <p>請先 <a href="login.php">登入</a> 再回應。</p>
+            <?php endif; ?>
         </div>
     </div>
 </body>
