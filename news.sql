@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS replies;
 DROP TABLE IF EXISTS news;
 DROP TABLE IF EXISTS members;
 
-CREATE TABLE members (
+CREATE TABLE members1 (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE members (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE news (
+CREATE TABLE news1 (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE news (
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE replies (
+CREATE TABLE replies1 (
     id INT AUTO_INCREMENT PRIMARY KEY,
     news_id INT NOT NULL,
     content TEXT NOT NULL,
