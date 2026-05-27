@@ -7,8 +7,8 @@ try {
     $stmt = $pdo->query('
         SELECT n.id, n.title, n.content, n.author, n.avatar, n.favorite_color, n.created_at,
                COUNT(r.id) AS reply_count
-        FROM news n
-        LEFT JOIN replies r ON n.id = r.news_id
+        FROM news1 n
+        LEFT JOIN replies1 r ON n.id = r.news_id
         GROUP BY n.id, n.title, n.content, n.author, n.avatar, n.favorite_color, n.created_at
         ORDER BY n.created_at DESC
     ');

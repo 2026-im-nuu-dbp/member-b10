@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($account === '' || $password === '' || $nickname === '') {
         $message = '帳號、密碼、暱稱都必須填寫。';
     } else {
-        $stmt = $pdo->prepare('SELECT id FROM members WHERE account = ?');
+        $stmt = $pdo->prepare('SELECT id FROM members1 WHERE account = ?');
         $stmt->execute([$account]);
 
         if ($stmt->fetch()) {
             $message = '帳號已存在。';
         } else {
-            $stmt = $pdo->prepare('INSERT INTO members (account, password, nickname, favorite_color, avatar, is_admin) VALUES (?, ?, ?, ?, ?, 0)');
+            $stmt = $pdo->prepare('INSERT INTO members1 (account, password, nickname, favorite_color, avatar, is_admin) VALUES (?, ?, ?, ?, ?, 0)');
             $stmt->execute([$account, password_hash($password, PASSWORD_DEFAULT), $nickname, $favoriteColor, $avatar]);
 
             login_member([

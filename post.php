@@ -18,7 +18,7 @@ if ($title === '' || $content === '') {
 }
 
 try {
-    $stmt = $pdo->prepare('INSERT INTO news (title, content, author, avatar, favorite_color) VALUES (?, ?, ?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO news1 (title, content, author, avatar, favorite_color) VALUES (?, ?, ?, ?, ?)');
     $stmt->execute([
         substr($title, 0, 200),
         substr($content, 0, 10000),

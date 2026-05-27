@@ -19,7 +19,7 @@ $editing = [
 
 $editId = intval($_GET['edit'] ?? 0);
 if ($editId > 0) {
-    $stmt = $pdo->prepare('SELECT id, account, nickname, favorite_color, avatar, is_admin FROM members WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT id, account, nickname, favorite_color, avatar, is_admin FROM members1 WHERE id = ?');
     $stmt->execute([$editId]);
     $member = $stmt->fetch();
 
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id === $currentMemberId) {
             $message = '不能刪除自己。';
         } else {
-            $stmt = $pdo->prepare('DELETE FROM members WHERE id = ?');
+            $stmt = $pdo->prepare('DELETE FROM members1 WHERE id = ?');
             $stmt->execute([$id]);
             header('Location: admin_members.php');
             exit;
@@ -54,25 +54,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($id === 0 && $password === '') {
             $message = '新增會員時必須輸入密碼。';
         } else {
-            $stmt = $pdo->prepare('SELECT id FROM members WHERE account = ? AND id <> ?');
+            $stmt = $pdo->prepare('SELECT id FROM members1 WHERE account = ? AND id <> ?');
             $stmt->execute([$account, $id]);
 
             if ($stmt->fetch()) {
                 $message = '帳號已存在。';
             } else {
                 if ($id === 0) {
-                    $stmt = $pdo->prepare('INSERT INTO members (account, password, nickname, favorite_color, avatar, is_admin) VALUES (?, ?, ?, ?, ?, ?)');
+                    $stmt = $pdo->prepare('INSERT INTO members1 (account, password, nickname, favorite_color, avatar, is_admin) VALUES (?, ?, ?, ?, ?, ?)');
                     $stmt->execute([$account, password_hash($password, PASSWORD_DEFAULT), $nickname, $favoriteColor, $avatar, $isAdmin]);
                 } elseif ($password === '') {
-                    $stmt = $pdo->prepare('UPDATE members SET account = ?, nickname = ?, favorite_color = ?, avatar = ?, is_admin = ? WHERE id = ?');
+                    $stmt = $pdo->prepare('UPDATE members1 SET account = ?, nickname = ?, favorite_color = ?, avatar = ?, is_admin = ? WHERE id = ?');
                     $stmt->execute([$account, $nickname, $favoriteColor, $avatar, $isAdmin, $id]);
                 } else {
-                    $stmt = $pdo->prepare('UPDATE members SET account = ?, password = ?, nickname = ?, favorite_color = ?, avatar = ?, is_admin = ? WHERE id = ?');
+                    $stmt = $pdo->prepare('UPDATE members1 SET account = ?, password = ?, nickname = ?, favorite_color = ?, avatar = ?, is_admin = ? WHERE id = ?');
                     $stmt->execute([$account, password_hash($password, PASSWORD_DEFAULT), $nickname, $favoriteColor, $avatar, $isAdmin, $id]);
                 }
 
                 if ($id === $currentMemberId) {
-                    $stmt = $pdo->prepare('SELECT id, account, nickname, favorite_color, avatar, is_admin FROM members WHERE id = ?');
+                    $stmt = $pdo->prepare('SELECT id, account, nickname, favorite_color, avatar, is_admin FROM members1 WHERE id = ?');
                     $stmt->execute([$id]);
                     $latest = $stmt->fetch();
 
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$members = $pdo->query('SELECT id, account, nickname, favorite_color, avatar, is_admin FROM members ORDER BY id ASC')->fetchAll();
+$members = $pdo->query('SELECT id, account, nickname, favorite_color, avatar, is_admin FROM members1 ORDER BY id ASC')->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant">

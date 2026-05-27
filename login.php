@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $account = trim($_POST['account'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $pdo->prepare('SELECT id, account, password, nickname, favorite_color, avatar, is_admin FROM members WHERE account = ? LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, account, password, nickname, favorite_color, avatar, is_admin FROM members1 WHERE account = ? LIMIT 1');
     $stmt->execute([$account]);
     $member = $stmt->fetch();
 

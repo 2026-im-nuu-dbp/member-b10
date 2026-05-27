@@ -10,7 +10,7 @@ if ($newsId <= 0) {
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT id, title, content, author, avatar, favorite_color, created_at FROM news WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT id, title, content, author, avatar, favorite_color, created_at FROM news1 WHERE id = ?');
     $stmt->execute([$newsId]);
     $news = $stmt->fetch();
 
@@ -20,7 +20,7 @@ try {
 
     $stmt = $pdo->prepare('
         SELECT id, content, author, avatar, favorite_color, created_at
-        FROM replies
+        FROM replies1
         WHERE news_id = ?
         ORDER BY created_at ASC
     ');

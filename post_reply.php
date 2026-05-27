@@ -22,14 +22,14 @@ if ($content === '') {
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT id FROM news WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT id FROM news1 WHERE id = ?');
     $stmt->execute([$newsId]);
 
     if (!$stmt->fetch()) {
         die('找不到此討論。<br><a href="index.php">返回首頁</a>');
     }
 
-    $stmt = $pdo->prepare('INSERT INTO replies (news_id, content, author, avatar, favorite_color) VALUES (?, ?, ?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO replies1 (news_id, content, author, avatar, favorite_color) VALUES (?, ?, ?, ?, ?)');
     $stmt->execute([
         $newsId,
         substr($content, 0, 10000),

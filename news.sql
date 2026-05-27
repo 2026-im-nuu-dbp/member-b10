@@ -36,5 +36,5 @@ CREATE TABLE replies1 (
     INDEX idx_news_id (news_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO members (account, password, nickname, favorite_color, avatar, is_admin)
+INSERT INTO members1 (account, password, nickname, favorite_color, avatar, is_admin)
 VALUES ('admin', '$2y$10$cADrfstqQDbJw9bY6n0mM.nt.JFJhgv.bfZZsWUjfhkViMGn.iBNC', '管理員', '#2563eb', '😎', 1);
